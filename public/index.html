@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Alarm Pro X</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        body {
+            font-family: Arial;
+            transition: 0.3s;
+            text-align: center;
+            padding: 30px;
+        }
+
+        body.light {
+            background: #f5f5f5;
+            color: #222;
+        }
+
+        body.dark {
+            background: #121212;
+            color: white;
+        }
+
+        .card {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+
+        input, button {
+            padding: 10px;
+            margin: 8px;
+            border-radius: 8px;
+            border: none;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        .alarm-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            padding: 8px;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.1);
+        }
+
+        .delete-btn {
+            background: red;
+            color: white;
+        }
+    </style>
+</head>
+<body class="light">
+
+<h1>⏰ Alarm Pro X</h1>
+
+<button onclick="toggleMode()">🌙 Toggle Dark Mode</button>
+
+<div class="card">
+    <input type="time" id="alarmTime">
+    <button onclick="addAlarm()">Add Alarm</button>
+
+    <h3>📋 Alarm List</h3>
+    <div id="alarmList"></div>
+</div>
+
+<audio id="alarmSound" loop>
+    <source src="https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg">
+</audio>
+
+<script>
+let alarms = JSON.parse(localStorage.getItem("alarms")) || [];
+const alarmList = document.getElementById("alarmList");
+const sound = document.getElementById("alarmSound");
+
+function saveAlarms() {
+    localStorage.setItem("alarms", JSON.stringify(alarms));
+}
+
+function renderAlarms() {
+    alarmList.innerHTML = "";
+    alarms.forEach((time, index) => {
+        alarmList.innerHTML += `
+            <div class="alarm-item">
+                <span>${time}</span>
+                <button class="delete-btn" onclick="deleteAlarm(${index})">X</button>
+            </div>
+        `;
+    });
+}
+
+function addAlarm() {
+    const time = document.getElementById("alarmTime").value;
+    if (!time) return;
+
+    alarms.push(time);
+    saveAlarms();
+    renderAlarms();
+}
+
+function deleteAlarm(index) {
+    alarms.splice(index, 1);
+    saveAlarms();
+    renderAlarms();
+}
+
+function toggleMode() {
+    const body = document.body;
+    body.classList.toggle("dark");
+    body.classList.toggle("light");
+}
+
+setInterval(() => {
+    const now = new Date();
+    const currentTime =
+        now.getHours().toString().padStart(2, '0') + ":" +
+        now.getMinutes().toString().padStart(2, '0');
+
+    alarms.forEach((time, index) => {
+        if (time === currentTime) {
+            sound.play();
+            alert("⏰ Alarm " + time);
+            deleteAlarm(index);
+        }
+    });
+}, 1000);
+
+renderAlarms();
+</script>
+
+</body>
+</html>
